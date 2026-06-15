@@ -47,10 +47,16 @@ jobs:
         run: terraform fmt -check -recursive
         working-directory: ${{ env.TF_WORKING_DIR }}
 
-      - name: Terraform init
-        run: terraform init
+      - name: Terraform init without backend
+        if: github.ref != 'refs/heads/main'
+        run: terraform init -backend=false
         working-directory: ${{ env.TF_WORKING_DIR }}
 
+      - name: Terraform init with remote backend
+        if: github.ref == 'refs/heads/main'
+        run: terraform init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+        
       - name: Terraform validate
         run: terraform validate
         working-directory: ${{ env.TF_WORKING_DIR }}
