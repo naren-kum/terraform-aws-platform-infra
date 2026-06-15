@@ -1,0 +1,80 @@
+name: terraform cd
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Terraform action to run"
+        required: true
+        default: "apply"
+        type: choice
+        options:
+          - apply
+          - destroy
+env:
+  TF_WORKING_DIR: envs/dev
+  AWS_REGION: eu-west-2
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: terraform-dev
+  cancel-in-progress: false
+
+jobs:
+  terraform-cd:
+    name: Terraform ${{ github.event.inputs.action }} - dev
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: dev
+
+    env:
+      TF_VAR_aws_region: eu-west-2
+      TF_VAR_project_name: terraform-aws-platform-infra
+      TF_VAR_environment: dev
+      TF_VAR_vpc_cidr: 10.10.0.0/16
+      TF_VAR_availability_zones: '["eu-west-2a", "eu-west-2b"]'
+      TF_VAR_public_subnet_cidrs: '["10.10.1.0/24", "10.10.2.0/24"]'
+      TF_VAR_private_app_subnet_cidrs: '["10.10.11.0/24", "10.10.12.0/24"]'
+      TF_VAR_private_db_subnet_cidrs: '["10.10.21.0/24", "10.10.22.0/24"]'
+      
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::361769572669:role/github-actions
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Terraform format check
+        run: terraform fmt -check -recursive
+        working-directory: ${{ env.TF_WORKING_DIR }}
+  
+      - name: Terraform init
+        run: terraform init
+        working-directory: ${{ env.TF_WORKING_DIR }}
+  
+      - name: Terraform validate
+        run: terraform validate
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Terraform plan for apply
+        if: github.event.inputs.action == 'apply'
+        run: terraform plan -input=false -lock-timeout=5m -out=tfplan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Terraform plan for destroy
+        if: github.event.inputs.action == 'destroy'
+        run: terraform plan -destroy -input=false -lock-timeout=5m -out=tfplan
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Terraform execute saved plan
+        run: terraform apply -input=false tfplan
+        working-directory: ${{ env.TF_WORKING_DIR }}
