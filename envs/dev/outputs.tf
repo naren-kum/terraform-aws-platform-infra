@@ -38,3 +38,26 @@ output "db_sg_id" {
   value       = module.network.db_sg_id
 }
 
+output "aws_lb_tg_arn" {
+  description = "ARN of the target group"
+  value       = module.network.aws_lb_tg_arn
+}
+
+output "aws_lb_tg_name" {
+  description = "ARN of the target group"
+  value       = module.network.aws_lb_tg_name
+}
+
+output "alb_arn" {
+  description = "ARN of the public alb"
+  value       = module.network.alb_arn
+}
+
+output "aws_listener_arn" {
+  description = "ARN of the alb listener"
+  value       = module.network.aws_listener_arn
+}
+
+output "alb_dns_name" {
+  value = module.network.alb_dns_name
+}
