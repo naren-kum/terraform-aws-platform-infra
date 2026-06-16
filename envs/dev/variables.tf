@@ -37,3 +37,13 @@ variable "private_db_subnet_cidrs" {
   description = "CIDR ranges for private database subnets"
   type        = list(string)
 }
+
+variable "app_port" {
+    description = "App port for app sg"
+    type        = string
+}
+
+variable "db_port" {
+    description = "db port for db sg"
+    type        = string
+}

@@ -136,3 +136,101 @@ resource "aws_route_table_association" "private_db" {
   subnet_id      = aws_subnet.private_db[count.index].id
   route_table_id = aws_route_table.private_db.id
 }
+
+resource "aws_security_group" "alb_sg" {
+  name        = "${var.project_name}-${var.environment}-alb-sg"
+  description = "security group to allow traffic from internet"
+  vpc_id      = aws_vpc.main.id
+
+    tags = {
+    Name        = "${var.project_name}-${var.environment}-alb-sg"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_traffic_443" {
+  security_group_id = aws_security_group.alb_sg.id
+  description       = "Allow inbound TLS traffic"
+  
+  ip_protocol       = "tcp"
+  from_port         = 443
+  to_port           = 443
+  cidr_ipv4         = "0.0.0.0/0"
+  
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_traffic_80" {
+  security_group_id = aws_security_group.alb_sg.id
+  description       = "Allow inbound TLS traffic"
+  
+  ip_protocol       = "tcp"
+  from_port         = 80
+  to_port           = 80
+  cidr_ipv4         = "0.0.0.0/0"
+  
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_alb_all_egress_ipv4" {
+  security_group_id = aws_security_group.alb_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+resource "aws_security_group" "app_sg" {
+  name        = "${var.project_name}-${var.environment}-app-sg"
+  description = "security group to allow traffic from alb"
+  vpc_id      = aws_vpc.main.id
+
+    tags = {
+    Name        = "${var.project_name}-${var.environment}-app-sg"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_alb_traffic" {
+  security_group_id = aws_security_group.app_sg.id
+  
+  ip_protocol       = "tcp"
+  from_port         = var.app_port
+  to_port           = var.app_port
+  referenced_security_group_id = aws_security_group.alb_sg.id
+}
+
+
+resource "aws_vpc_security_group_egress_rule" "allow_app_all_egress_ipv4" {
+  security_group_id = aws_security_group.app_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}
+
+resource "aws_security_group" "db_sg" {
+  name        = "${var.project_name}-${var.environment}-db-sg"
+  description = "Security group for database access from app security group"
+  vpc_id      = aws_vpc.main.id
+
+    tags = {
+    Name        = "${var.project_name}-${var.environment}-db-sg"
+    Environment = var.environment
+    Project     = var.project_name
+    ManagedBy   = "Terraform"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_app_sg_traffic" {
+  security_group_id = aws_security_group.db_sg.id
+  
+  ip_protocol       = "tcp"
+  from_port         = var.db_port
+  to_port           = var.db_port
+  referenced_security_group_id = aws_security_group.app_sg.id
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_db_all_traffic_ipv4" {
+  security_group_id = aws_security_group.db_sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1"
+}

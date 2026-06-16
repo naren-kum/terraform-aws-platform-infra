@@ -20,4 +20,6 @@ module "network" {
   public_subnet_cidrs      = var.public_subnet_cidrs
   private_app_subnet_cidrs = var.private_app_subnet_cidrs
   private_db_subnet_cidrs  = var.private_db_subnet_cidrs
+  app_port                 = var.app_port
+  db_port                  = var.db_port
 }
