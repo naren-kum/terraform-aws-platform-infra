@@ -33,3 +33,27 @@ output "db_sg_id" {
   value       = aws_security_group.db_sg.id
 }
 
+
+output "aws_lb_tg_arn" {
+  description = "ARN of the target group"
+  value       = aws_lb_target_group.application_tg.arn
+}
+
+output "aws_lb_tg_name" {
+  description = "ARN of the target group"
+  value       = aws_lb_target_group.application_tg.name
+}
+
+output "alb_arn" {
+  description = "ARN of the public alb"
+  value       = aws_lb.public_alb.arn
+}
+
+output "aws_listener_arn" {
+  description = "ARN of the alb listener"
+  value       = aws_lb_listener.application_lb_listener.arn
+}
+
+output "alb_dns_name" {
+  value = aws_lb.public_alb.dns_name
+}
