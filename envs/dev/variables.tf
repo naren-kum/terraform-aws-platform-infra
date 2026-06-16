@@ -39,11 +39,11 @@ variable "private_db_subnet_cidrs" {
 }
 
 variable "app_port" {
-    description = "App port for app sg"
-    type        = string
+  description = "App port for app sg"
+  type        = string
 }
 
 variable "db_port" {
-    description = "db port for db sg"
-    type        = string
+  description = "db port for db sg"
+  type        = string
 }
