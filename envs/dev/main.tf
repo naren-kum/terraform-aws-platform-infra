@@ -23,3 +23,13 @@ module "network" {
   app_port                 = var.app_port
   db_port                  = var.db_port
 }
+
+module "compute" {
+  source = "../../modules/compute"
+
+  project_name      = var.project_name
+  environment       = var.environment
+  subnet_id         = module.network.public_subnet_ids[0]
+  security_group_id = module.network.app_sg_id
+  target_group_arn  = module.network.aws_lb_tg_arn
+}
