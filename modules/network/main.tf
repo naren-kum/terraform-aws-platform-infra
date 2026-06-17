@@ -244,12 +244,9 @@ resource "aws_lb" "public_alb" {
 
   enable_deletion_protection = false
 
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-public-alb"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  }
+  tags = merge(local.common_tags, {
+     Name = "${local.name_prefix}-public-alb"
+     })
 }
 
 resource "aws_lb_target_group" "application_tg" {
@@ -265,12 +262,9 @@ resource "aws_lb_target_group" "application_tg" {
     matcher  = "200-399"
   }
   
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-application-tg"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  }
+  tags = merge(local.common_tags, {
+     Name = "${local.name_prefix}-application-tg"
+     })
 }
 
 resource "aws_lb_listener" "application_lb_listener" {
@@ -293,12 +287,9 @@ resource "aws_lb_listener" "application_lb_listener" {
 resource "aws_eip" "nat" {
   domain = "vpc"
 
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-nat-eip"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  }
+  tags = merge(local.common_tags, {
+     Name = "${local.name_prefix}-nat-eip"
+     })
 }
 
 resource "aws_nat_gateway" "main" {
@@ -309,12 +300,9 @@ resource "aws_nat_gateway" "main" {
     aws_internet_gateway.main
   ]
 
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-nat-gateway"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  }
+  tags = merge(local.common_tags, {
+     Name = "${local.name_prefix}-nat-gateway"
+     })
 }
 
 resource "aws_route" "private_app_nat_access" {
