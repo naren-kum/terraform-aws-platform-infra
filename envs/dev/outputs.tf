@@ -69,3 +69,11 @@ output "app_host_instance_id" {
 output "app_host_private_ip" {
   value = module.compute.instance_private_ip
 }
+
+output "ec2_ssm_role_name" {
+  value = module.compute.ec2_ssm_role_name
+}
+
+output "ec2_instance_profile_name" {
+  value = module.compute.ec2_instance_profile_name
+}
