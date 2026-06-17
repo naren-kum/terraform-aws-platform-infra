@@ -29,7 +29,7 @@ module "compute" {
 
   project_name      = var.project_name
   environment       = var.environment
-  subnet_id         = module.network.public_subnet_ids[0]
+  subnet_id         = module.network.private_app_subnet_ids[0]
   security_group_id = module.network.app_sg_id
   target_group_arn  = module.network.aws_lb_tg_arn
 }
