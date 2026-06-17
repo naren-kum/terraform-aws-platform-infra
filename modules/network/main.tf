@@ -254,7 +254,7 @@ resource "aws_lb" "public_alb" {
 
 resource "aws_lb_target_group" "application_tg" {
   name        = "${var.environment}-application-tg"
-  target_type = "ip"
+  target_type = "instance"
   port        = var.app_port
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id

@@ -61,3 +61,11 @@ output "aws_listener_arn" {
 output "alb_dns_name" {
   value = module.network.alb_dns_name
 }
+
+output "app_host_instance_id" {
+  value = module.compute.instance_id
+}
+
+output "app_host_private_ip" {
+  value = module.compute.instance_private_ip
+}
