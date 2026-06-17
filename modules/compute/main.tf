@@ -5,7 +5,7 @@ resource "aws_instance" "dev_app_host" {
   vpc_security_group_ids      = [var.security_group_id]
   subnet_id                   = var.subnet_id # Using public subnet temporarily for Docker bootstrap without NAT.
   user_data                   = file("${path.module}/install_docker.sh")
-  associate_public_ip_address = true
+  associate_public_ip_address = false
 
   tags = {
     Name        = "${var.project_name}-${var.environment}-ec2"
