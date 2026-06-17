@@ -7,12 +7,9 @@ resource "aws_instance" "dev_app_host" {
   user_data                   = file("${path.module}/install_docker.sh")
   associate_public_ip_address = false
 
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-ec2"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  }
+  tags = merge(local.common_tags, {
+     Name = "${local.name_prefix}-ec2"
+     })
 }
 
 resource "aws_lb_target_group_attachment" "attach_dev_app_host" {
@@ -40,12 +37,9 @@ resource "aws_iam_role" "ec2_ssm_role" {
     ]
   })
 
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-ec2-ssm-role"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  }
+  tags = merge(local.common_tags, {
+     Name = "${local.name_prefix}-ec2-ssm-role"
+     })
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_ssm_core" {
@@ -57,10 +51,7 @@ resource "aws_iam_instance_profile" "ec2_ssm_profile" {
   name = "${var.project_name}-${var.environment}-ec2-ssm-profile"
   role = aws_iam_role.ec2_ssm_role.name
 
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-ec2-ssm-profile"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-  }
+  tags = merge(local.common_tags, {
+     Name = "${local.name_prefix}-ec2-ssm-profile"
+     })
 }
