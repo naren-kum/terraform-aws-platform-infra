@@ -29,4 +29,5 @@ module "compute" {
   subnet_id         = module.network.private_app_subnet_ids[0]
   security_group_id = module.network.app_sg_id
   target_group_arn  = module.network.aws_lb_tg_arn
+  instance_type     = var.instance_type
 }

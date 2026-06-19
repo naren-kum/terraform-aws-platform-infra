@@ -22,7 +22,7 @@ data "aws_ami" "amazon_linux_2023" {
 
 resource "aws_instance" "dev_app_host" {
   ami                         = data.aws_ami.amazon_linux_2023.id
-  instance_type               = "t3.micro"
+  instance_type               = var.instance_type
   iam_instance_profile        = aws_iam_instance_profile.ec2_ssm_profile.name
   vpc_security_group_ids      = [var.security_group_id]
   subnet_id                   = var.subnet_id

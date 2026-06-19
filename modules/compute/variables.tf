@@ -22,3 +22,14 @@ variable "target_group_arn" {
   description = "Target group ARN where the EC2 instance will be registered"
   type        = string
 }
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t3.micro"
+
+  validation {
+    condition     = can(regex("^[a-z][0-9][a-z]?\\.[a-z0-9]+$", var.instance_type))
+    error_message = "instance_type must be a valid-looking EC2 instance type, for example t3.micro or t3.small."
+  }
+}
