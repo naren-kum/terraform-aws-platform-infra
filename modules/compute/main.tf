@@ -1,9 +1,31 @@
+data "aws_ami" "amazon_linux_2023" {
+  most_recent = true
+
+  owners = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
+
 resource "aws_instance" "dev_app_host" {
-  ami                         = "ami-07c06c9f04a3f051f"
+  ami                         = data.aws_ami.amazon_linux_2023.id
   instance_type               = "t3.micro"
   iam_instance_profile        = aws_iam_instance_profile.ec2_ssm_profile.name
   vpc_security_group_ids      = [var.security_group_id]
-  subnet_id                   = var.subnet_id # Using public subnet temporarily for Docker bootstrap without NAT.
+  subnet_id                   = var.subnet_id
   user_data                   = file("${path.module}/install_docker.sh")
   associate_public_ip_address = false
 
