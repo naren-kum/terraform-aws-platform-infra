@@ -4,18 +4,27 @@ output "vpc_id" {
 }
 
 output "public_subnet_ids" {
-  description = "IDs of the public subnets"
-  value       = aws_subnet.public[*].id
+  description = "Public subnet IDs"
+  value = [
+    for key in sort(keys(aws_subnet.public)) :
+    aws_subnet.public[key].id
+  ]
 }
 
 output "private_app_subnet_ids" {
-  description = "IDs of the private subnets"
-  value       = aws_subnet.private_app[*].id
+  description = "Private app subnet IDs"
+  value = [
+    for key in sort(keys(aws_subnet.private_app)) :
+    aws_subnet.private_app[key].id
+  ]
 }
 
 output "private_db_subnet_ids" {
-  description = "IDs of the private db subnets"
-  value       = aws_subnet.private_db[*].id
+  description = "Private DB subnet IDs"
+  value = [
+    for key in sort(keys(aws_subnet.private_db)) :
+    aws_subnet.private_db[key].id
+  ]
 }
 
 output "alb_sg_id" {

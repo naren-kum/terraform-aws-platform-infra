@@ -13,54 +13,45 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "public" {
-  count = length(var.public_subnet_cidrs)
+  for_each = local.public_subnets
 
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.public_subnet_cidrs[count.index]
-  availability_zone       = var.availability_zones[count.index]
+  cidr_block              = each.value.cidr_block
+  availability_zone       = each.value.availability_zone
   map_public_ip_on_launch = true
 
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-public-subnet-${count.index + 1}"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Tier        = "public"
-  }
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-public-subnet-${each.value.subnet_number}"
+    Tier = "public"
+  })
 }
 
 resource "aws_subnet" "private_app" {
-  count = length(var.private_app_subnet_cidrs)
+  for_each = local.private_app_subnets
 
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.private_app_subnet_cidrs[count.index]
-  availability_zone       = var.availability_zones[count.index]
+  cidr_block              = each.value.cidr_block
+  availability_zone       = each.value.availability_zone
   map_public_ip_on_launch = false
 
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-private-app-subnet-${count.index + 1}"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Tier        = "private-app"
-  }
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-private-app-subnet-${each.value.subnet_number}"
+    Tier = "private-app"
+  })
 }
 
 resource "aws_subnet" "private_db" {
-  count = length(var.private_db_subnet_cidrs)
+  for_each = local.private_db_subnets
 
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.private_db_subnet_cidrs[count.index]
-  availability_zone       = var.availability_zones[count.index]
+  cidr_block              = each.value.cidr_block
+  availability_zone       = each.value.availability_zone
   map_public_ip_on_launch = false
 
-  tags = {
-    Name        = "${var.project_name}-${var.environment}-private-db-subnet-${count.index + 1}"
-    Environment = var.environment
-    Project     = var.project_name
-    ManagedBy   = "Terraform"
-    Tier        = "private-db"
-  }
+  tags = merge(local.common_tags, {
+    Name = "${local.name_prefix}-private-db-subnet-${each.value.subnet_number}"
+    Tier = "private-db"
+  })
 }
 
 resource "aws_internet_gateway" "main" {
@@ -93,9 +84,9 @@ resource "aws_route" "public_internet_access" {
 }
 
 resource "aws_route_table_association" "public" {
-  count = length(aws_subnet.public)
+  for_each = aws_subnet.public
 
-  subnet_id      = aws_subnet.public[count.index].id
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.public.id
 }
 
@@ -112,9 +103,9 @@ resource "aws_route_table" "private_app" {
 }
 
 resource "aws_route_table_association" "private_app" {
-  count = length(aws_subnet.private_app)
+  for_each = aws_subnet.private_app
 
-  subnet_id      = aws_subnet.private_app[count.index].id
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.private_app.id
 }
 
@@ -131,9 +122,9 @@ resource "aws_route_table" "private_db" {
 }
 
 resource "aws_route_table_association" "private_db" {
-  count = length(aws_subnet.private_db)
+  for_each = aws_subnet.private_db
 
-  subnet_id      = aws_subnet.private_db[count.index].id
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.private_db.id
 }
 
@@ -240,7 +231,10 @@ resource "aws_lb" "public_alb" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
-  subnets            = [for subnet in aws_subnet.public : subnet.id]
+  subnets = [
+  for key in sort(keys(aws_subnet.public)) :
+  aws_subnet.public[key].id
+  ]
 
   enable_deletion_protection = false
 
@@ -294,7 +288,7 @@ resource "aws_eip" "nat" {
 
 resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public[0].id
+  subnet_id     = aws_subnet.public["public-01"].id
 
   depends_on = [
     aws_internet_gateway.main
