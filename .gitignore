@@ -2,10 +2,8 @@
 .terraform/
 *.tfstate
 *.tfstate.*
-.terraform.lock.hcl
 
 # Terraform variable files with secrets
-*.tfvars
 *.tfvars.json
 
 # Crash logs
